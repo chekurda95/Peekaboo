@@ -1,20 +1,28 @@
 package com.chekurda.peekaboo.main_screen.presentation.views.drawables
 
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorFilter
-import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.annotation.Px
+import com.chekurda.design.custom_view_tools.utils.PAINT_MAX_ALPHA
+import com.chekurda.design.custom_view_tools.utils.SimplePaint
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Drawable амплитуды громкости микрофона при записи аудио.
  */
-internal class RSSIDrawable(private val paint: Paint) : Drawable() {
+internal class RSSIDrawable : Drawable() {
+
+    private val paint = SimplePaint {
+        color = Color.GREEN
+        alpha = (0.25f * PAINT_MAX_ALPHA).roundToInt()
+    }
 
     private var amplitudeScale = 0f
     private var amplitudeChangingSpeed = 0f

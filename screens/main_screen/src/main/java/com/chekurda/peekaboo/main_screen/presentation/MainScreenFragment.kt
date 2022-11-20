@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.DecelerateInterpolator
 import android.widget.Button
+import android.widget.Toast
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
@@ -20,6 +21,8 @@ import com.chekurda.common.base_fragment.BasePresenterFragment
 import com.chekurda.design.custom_view_tools.utils.dp
 import com.chekurda.peekaboo.main_screen.R
 import com.chekurda.peekaboo.main_screen.contact.MainScreenFragmentFactory
+import com.chekurda.peekaboo.main_screen.data.GameStatus
+import com.chekurda.peekaboo.main_screen.data.PlayerFoundEvent
 import com.chekurda.peekaboo.main_screen.presentation.views.ConnectionStateView
 import com.chekurda.peekaboo.main_screen.presentation.views.game_master.GameMasterScreenView
 import com.chekurda.peekaboo.main_screen.presentation.views.player.PlayerScreenView
@@ -77,7 +80,9 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
 
     private fun onGameMasterModeSelected() {
         mainScreenView?.apply {
-            gameMasterScreenView = GameMasterScreenView(context)
+            gameMasterScreenView = GameMasterScreenView(context).apply {
+                controller = presenter
+            }
             showScreen(gameMasterScreenView!!)
             presenter.onMasterModeSelected()
         }
@@ -85,14 +90,28 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
 
     private fun onPlayerModeSelected() {
         mainScreenView?.apply {
-            playerScreenView = PlayerScreenView(context)
+            playerScreenView = PlayerScreenView(context).apply {
+                controller = presenter
+            }
             showScreen(playerScreenView!!)
             presenter.onPlayerModeSelected()
         }
     }
 
     override fun showMaxRssi(rssi: Int) {
-        Log.e("TAGTAG", "rssi $rssi")
+        gameMasterScreenView?.updateRssi(rssi)
+    }
+
+    override fun onGameStatusChanged(status: GameStatus) {
+        playerScreenView?.changeGameStatus(status)
+    }
+
+    override fun onPlayerFound(event: PlayerFoundEvent) {
+        Toast.makeText(context, "Press F to ${event.deviceName}", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun finishGame() {
+        Toast.makeText(context, "You've been caught", Toast.LENGTH_LONG).show()
     }
 
     override fun updateSearchState(isRunning: Boolean) {

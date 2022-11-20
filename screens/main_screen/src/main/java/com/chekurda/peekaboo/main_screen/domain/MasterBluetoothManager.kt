@@ -56,6 +56,7 @@ internal class MasterBluetoothManager {
 
     var listener: BluetoothManagerListener? = null
     var rssiListener: ((Int) -> Unit)? = null
+    var onPlayerFoundListener: ((PlayerFoundEvent) -> Unit)? = null
 
     fun init(context: Context, mainHandler: Handler) {
         this.context = context
@@ -153,6 +154,10 @@ internal class MasterBluetoothManager {
                                 gatts.remove(playerAddress)
                                 rssiMap.remove(playerAddress)
                                 gameStatus = gameStatus.copy(foundPlayers = newFoundList)
+                                outputStream?.writeObject(obj)
+                                mainHandler?.post {
+                                    onPlayerFoundListener?.invoke(obj)
+                                }
                             }
                         } else {
                             playersSocket.outputStream.write(connectionCheckArray)

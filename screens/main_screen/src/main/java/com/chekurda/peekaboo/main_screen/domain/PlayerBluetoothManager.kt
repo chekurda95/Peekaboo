@@ -1,5 +1,6 @@
 package com.chekurda.peekaboo.main_screen.domain
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -9,7 +10,9 @@ import android.os.Handler
 import android.util.Log
 import com.chekurda.common.storeIn
 import com.chekurda.peekaboo.main_screen.data.GameStatus
+import com.chekurda.peekaboo.main_screen.data.PlayerFoundEvent
 import com.chekurda.peekaboo.main_screen.utils.SimpleReceiver
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -70,6 +73,7 @@ internal class PlayerBluetoothManager {
 
     var listener: BluetoothManagerListener? = null
     var gameStatusListener: ((GameStatus) -> Unit)? = null
+    var onPlayerFoundListener: ((PlayerFoundEvent) -> Unit)? = null
 
     fun init(context: Context, mainHandler: Handler) {
         this.context = context
@@ -138,10 +142,13 @@ internal class PlayerBluetoothManager {
                         when {
                             socket.inputStream.available() != 0 -> {
                                 val obj = inputStream.readObject()
-                                /*if (obj is Message) {
-                                    messageStoreList.add(obj)
-                                    outputStream.writeObject(obj)
-                                }*/
+                                mainHandler?.post {
+                                    if (obj is GameStatus) {
+                                        gameStatusListener?.invoke(obj)
+                                    } else if (obj is PlayerFoundEvent) {
+                                        onPlayerFoundListener?.invoke(obj)
+                                    }
+                                }
                             }
                             else -> Unit
                         }
@@ -198,13 +205,27 @@ internal class PlayerBluetoothManager {
         closeSocket()
     }
 
+    @SuppressLint("HardwareIds")
     fun onFoundMe() {
-
+        val outputStream = outputStream ?: return
+        val event = PlayerFoundEvent(
+            deviceAddress = bluetoothAdapter.address,
+            deviceName = bluetoothAdapter.name
+        )
+        Completable.fromCallable {
+            outputStream.writeObject(event)
+        }.subscribeOn(Schedulers.io())
+            .subscribe(
+                { Log.d("PlayerBluetoothManager", "onFoundMe sent") },
+                { Log.d("PlayerBluetoothManager", "onFoundMe send error $it") }
+            )
+            .storeIn(disposer)
     }
 
     private fun closeSocket() {
         try {
             socket?.close()
+            outputStream?.close()
         } catch (ignore: Exception) { }
         socket = null
     }

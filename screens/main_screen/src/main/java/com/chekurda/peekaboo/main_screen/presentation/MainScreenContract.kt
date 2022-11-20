@@ -3,6 +3,8 @@ package com.chekurda.peekaboo.main_screen.presentation
 import android.app.Activity
 import android.os.Handler
 import com.chekurda.common.base_fragment.BasePresenter
+import com.chekurda.peekaboo.main_screen.data.GameStatus
+import com.chekurda.peekaboo.main_screen.data.PlayerFoundEvent
 import com.chekurda.peekaboo.main_screen.presentation.views.game_master.GameMasterController
 import com.chekurda.peekaboo.main_screen.presentation.views.player.PlayerController
 
@@ -31,6 +33,12 @@ internal interface MainScreenContract {
         fun provideHandler(): Handler
 
         fun showMaxRssi(rssi: Int)
+
+        fun onGameStatusChanged(status: GameStatus)
+
+        fun onPlayerFound(event: PlayerFoundEvent)
+
+        fun finishGame()
     }
 
     /**
