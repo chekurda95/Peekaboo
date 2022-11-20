@@ -36,8 +36,8 @@ internal class PlayerScreenView @JvmOverloads constructor(
     private val foundButton = AppCompatButton(context).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_PX, dp(20).toFloat())
         setTextColor(Color.WHITE)
-        text = "I was found"
-        background = ContextCompat.getDrawable(context, R.drawable.outcome_message_background)
+        text = "Give up"
+        background = ContextCompat.getDrawable(context, R.drawable.game_over_background)
         setPadding(dp(20))
         isVisible = false
         setOnClickListener {

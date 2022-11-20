@@ -25,7 +25,7 @@ internal class ConnectionStateView @JvmOverloads constructor(
 
     enum class State(val text: String, @DrawableRes val backgroundRes: Int) {
         GAME_STARTED("Game on!".uppercase(), R.drawable.connected_state_background),
-        GAME_OVER("Game over".uppercase(), R.drawable.search_state_background),
+        GAME_OVER("Game over".uppercase(), R.drawable.game_over_background),
         READY("READY".uppercase(), R.drawable.connected_state_background),
         SEARCHING_GAME_MASTER("Searching game master".uppercase(), R.drawable.search_state_background),
         SEARCHING_PLAYERS("Searching players".uppercase(), R.drawable.search_state_background)
