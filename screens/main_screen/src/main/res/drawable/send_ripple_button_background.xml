@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ripple_color">
+    <item android:drawable="@drawable/send_button_background"/>
+    <item
+        android:drawable="@drawable/ic_baseline_arrow_upward_24"
+        android:start="4dp"
+        android:top="4dp"
+        android:end="4dp"
+        android:bottom="4dp"/>
+</ripple>

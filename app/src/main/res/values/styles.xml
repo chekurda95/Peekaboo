@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="InputViewStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textCursorDrawable">@drawable/edit_text_cursor_drawable</item>
+    </style>
+
+</resources>
