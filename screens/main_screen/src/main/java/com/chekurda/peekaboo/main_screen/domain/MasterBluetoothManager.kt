@@ -56,7 +56,7 @@ internal class MasterBluetoothManager {
 
     fun startPlayerSearchingService() {
         if (isConnected) return
-        Log.d("MasterBluetoothManager", "startPineDetectService")
+        Log.d("MasterBluetoothManager", "startPlayerSearchingService")
         if (!isDiscoverable) makeDiscoverable()
         bluetoothAdapter.startDiscovery()
         prepareDeviceName()
@@ -220,5 +220,5 @@ internal class MasterBluetoothManager {
 
 internal const val MASTER_SECURE_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a67"
 internal const val MATER_DEVICE_NAME = "Peekaboo game master"
-internal const val MASTER_SERVICE_NAME = "Secret_pine_service"
+internal const val MASTER_SERVICE_NAME = "Peekaboo_game_service"
 private const val DISCOVERABLE_SECONDS = 300L
