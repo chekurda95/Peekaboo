@@ -3,6 +3,8 @@ package com.chekurda.peekaboo.main_screen.presentation
 import android.app.Activity
 import android.os.Handler
 import com.chekurda.common.base_fragment.BasePresenter
+import com.chekurda.peekaboo.main_screen.presentation.views.game_master.GameMasterController
+import com.chekurda.peekaboo.main_screen.presentation.views.player.PlayerController
 
 /**
  * Контракт главного экрана.
@@ -27,17 +29,17 @@ internal interface MainScreenContract {
         fun provideActivity(): Activity
 
         fun provideHandler(): Handler
+
+        fun showMaxRssi(rssi: Int)
     }
 
     /**
      * Контракт презентера главного экрана.
      */
-    interface Presenter : BasePresenter<View> {
+    interface Presenter : BasePresenter<View>, GameMasterController, PlayerController {
 
         fun onMasterModeSelected()
 
         fun onPlayerModeSelected()
-
-        fun onGameStarted()
     }
 }

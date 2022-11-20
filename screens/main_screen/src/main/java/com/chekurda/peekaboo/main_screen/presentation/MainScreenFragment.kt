@@ -7,6 +7,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -88,6 +89,10 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
             showScreen(playerScreenView!!)
             presenter.onPlayerModeSelected()
         }
+    }
+
+    override fun showMaxRssi(rssi: Int) {
+        Log.e("TAGTAG", "rssi $rssi")
     }
 
     override fun updateSearchState(isRunning: Boolean) {

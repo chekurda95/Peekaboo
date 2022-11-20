@@ -29,6 +29,9 @@ internal class MainScreenPresenterImpl : BasePresenterImpl<MainScreenContract.Vi
         masterManager = MasterBluetoothManager().apply {
             init(view!!.provideActivity().applicationContext, view!!.provideHandler())
             listener = this@MainScreenPresenterImpl
+            rssiListener = {
+                view?.showMaxRssi(it)
+            }
             startPlayerSearchingService()
         }
     }
@@ -80,6 +83,10 @@ internal class MainScreenPresenterImpl : BasePresenterImpl<MainScreenContract.Vi
 
     override fun onGameStarted() {
         masterManager?.onGameStarted()
+    }
+
+    override fun onFoundMe() {
+        playerManager?.onFoundMe()
     }
 
     override fun onDestroy() {

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import com.chekurda.common.storeIn
+import com.chekurda.peekaboo.main_screen.data.GameStatus
 import com.chekurda.peekaboo.main_screen.utils.SimpleReceiver
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,6 +17,7 @@ import io.reactivex.disposables.SerialDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.util.UUID
 import kotlin.Exception
 
@@ -64,8 +66,10 @@ internal class PlayerBluetoothManager {
     private var context: Context? = null
     private var mainHandler: Handler? = null
     private var socket: BluetoothSocket? = null
+    private var outputStream: ObjectOutputStream? = null
 
     var listener: BluetoothManagerListener? = null
+    var gameStatusListener: ((GameStatus) -> Unit)? = null
 
     fun init(context: Context, mainHandler: Handler) {
         this.context = context
@@ -123,10 +127,12 @@ internal class PlayerBluetoothManager {
 
     private fun addSocketObserver(socket: BluetoothSocket) {
         this.socket = socket
+        this.outputStream = ObjectOutputStream(socket.outputStream)
         val thread = object : Thread() {
             override fun run() {
                 super.run()
                 kotlin.runCatching {
+                    isConnected = true
                     val inputStream = ObjectInputStream(socket.inputStream)
                     while (isConnected) {
                         when {
@@ -137,9 +143,11 @@ internal class PlayerBluetoothManager {
                                     outputStream.writeObject(obj)
                                 }*/
                             }
-                            else -> socket.outputStream.write(ByteArray(0))
+                            else -> Unit
                         }
+                        socket.outputStream.write(ByteArray(0))
                         Log.i("PlayerBluetoothManager", "success write")
+                        sleep(1000)
                     }
                 }.apply {
                     Log.d("PlayerBluetoothManager", "onSocketDisconnected")
@@ -148,6 +156,7 @@ internal class PlayerBluetoothManager {
                     mainHandler?.post {
                         startGameMasterSearching()
                         listener?.onConnectionCanceled(isError = true)
+                        outputStream = null
                     }
                 }
             }
@@ -187,6 +196,10 @@ internal class PlayerBluetoothManager {
         isConnected = false
         disposer.dispose()
         closeSocket()
+    }
+
+    fun onFoundMe() {
+
     }
 
     private fun closeSocket() {
