@@ -61,7 +61,10 @@ internal class ConnectionStateView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        dotsDrawable.setVisible(state == State.SEARCHING_GAME_MASTER, false)
+        dotsDrawable.setVisible(
+            state == State.SEARCHING_GAME_MASTER || state == State.SEARCHING_PLAYERS,
+            false
+        )
         setMeasuredDimension(
             measureDirection(widthMeasureSpec) { suggestedMinimumWidth },
             measureDirection(heightMeasureSpec) { suggestedMinimumHeight },
