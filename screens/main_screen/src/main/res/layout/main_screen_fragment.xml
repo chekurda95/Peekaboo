@@ -11,7 +11,7 @@
         android:id="@+id/app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pine secret"
+        android:text="Peekaboo"
         android:textSize="35dp"
         android:textStyle="italic"
         android:typeface="serif"
@@ -22,25 +22,25 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <Button
-        android:id="@+id/pine_mode"
+        android:id="@+id/master_mode_button"
         style="@style/ModeButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pine mode"
+        android:text="Game master"
         android:background="@drawable/pine_mode_ripple_button_background"
         app:layout_constraintTop_toBottomOf="@+id/app_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/user_mode"/>
+        app:layout_constraintBottom_toTopOf="@+id/player_mode_button"/>
 
     <Button
-        android:id="@+id/user_mode"
+        android:id="@+id/player_mode_button"
         style="@style/ModeButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="User mode"
+        android:text="Player mode"
         android:background="@drawable/pine_lover_mode_ripple_button_background"
-        app:layout_constraintTop_toBottomOf="@+id/pine_mode"
+        app:layout_constraintTop_toBottomOf="@+id/master_mode_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

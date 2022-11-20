@@ -28,7 +28,7 @@ import com.chekurda.peekaboo.main_screen.presentation.views.user.panel.MessagePa
 import com.chekurda.peekaboo.main_screen.presentation.views.user.panel.MessagePanelController
 import org.apache.commons.lang3.StringUtils
 
-internal class UserScreenView @JvmOverloads constructor(
+internal class PlayerScreenView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
@@ -40,7 +40,7 @@ internal class UserScreenView @JvmOverloads constructor(
         sendButton.setOnClickListener { onSendButtonClicked() }
     }
     private val messageListView = RecyclerView(context).apply {
-        adapter = this@UserScreenView.adapter
+        adapter = this@PlayerScreenView.adapter
         layoutManager = object : LinearLayoutManager(context) {
             init {
                 stackFromEnd = true

@@ -11,7 +11,7 @@ import com.chekurda.design.custom_view_tools.utils.dp
 import com.chekurda.peekaboo.main_screen.R
 import com.chekurda.peekaboo.main_screen.presentation.views.ConnectionStateView
 
-internal class PineScreenView @JvmOverloads constructor(
+internal class GameMasterScreenView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {

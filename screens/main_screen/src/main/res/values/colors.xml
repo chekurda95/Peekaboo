@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <item name="palette_color_1" type="color">#B8673C</item>
-    <item name="palette_color_2" type="color">#3B5053</item>
-    <item name="palette_color_3" type="color">#B9B0B1</item>
-    <item name="palette_color_4" type="color">#929BA2</item>
-    <item name="palette_color_5" type="color">#1D2525</item>
-    <item name="palette_color_6" type="color">#377AB5</item>
+    <item name="palette_color_1" type="color">#AA7E4F</item>
+    <item name="palette_color_2" type="color">#615442</item>
+    <item name="palette_color_3" type="color">#999391</item>
+    <item name="palette_color_4" type="color">#AFA9A9</item>
+    <item name="palette_color_5" type="color">#313224</item>
+    <item name="palette_color_6" type="color">#313224</item>
 
     <item name="main_background_color" type="color">@color/palette_color_4</item>
     <item name="message_panel_background_color" type="color">@color/palette_color_5</item>

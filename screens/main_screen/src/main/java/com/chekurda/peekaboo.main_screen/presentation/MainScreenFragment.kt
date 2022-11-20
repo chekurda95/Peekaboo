@@ -21,10 +21,9 @@ import com.chekurda.peekaboo.main_screen.R
 import com.chekurda.peekaboo.main_screen.contact.MainScreenFragmentFactory
 import com.chekurda.peekaboo.main_screen.data.Message
 import com.chekurda.peekaboo.main_screen.presentation.views.ConnectionStateView
-import com.chekurda.peekaboo.main_screen.presentation.views.pine.PineScreenView
-import com.chekurda.peekaboo.main_screen.presentation.views.user.UserScreenView
+import com.chekurda.peekaboo.main_screen.presentation.views.pine.GameMasterScreenView
+import com.chekurda.peekaboo.main_screen.presentation.views.user.PlayerScreenView
 import com.chekurda.peekaboo.main_screen.utils.PermissionsHelper
-import com.chekurda.peekaboo.main_screen.utils.RecordingDeviceHelper
 import kotlin.math.roundToInt
 
 /**
@@ -40,18 +39,16 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
     override val layoutRes: Int = R.layout.main_screen_fragment
 
     private var mainScreenView: ViewGroup? = null
-    private var pineModeButton: Button? = null
-    private var userModeButton: Button? = null
-    private var pineScreenView: PineScreenView? = null
-    private var userScreenView: UserScreenView? = null
+    private var gameMasterModeButton: Button? = null
+    private var playerModeButton: Button? = null
+    private var gameMasterScreenView: GameMasterScreenView? = null
+    private var playerScreenView: PlayerScreenView? = null
 
     private var permissionsHelper: PermissionsHelper? = null
-    private var deviceHelper: RecordingDeviceHelper? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         permissionsHelper = PermissionsHelper(requireActivity(), permissions, PERMISSIONS_REQUEST_CODE)
-        deviceHelper = RecordingDeviceHelper(requireActivity())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -62,64 +59,54 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
     @SuppressLint("ClickableViewAccessibility")
     private fun initViews(view: View) {
         mainScreenView = view.findViewById(R.id.main_screen_root)
-        pineModeButton = view.findViewById<Button?>(R.id.pine_mode).apply {
+        gameMasterModeButton = view.findViewById<Button?>(R.id.master_mode_button).apply {
             setOnClickListener {
                 permissionsHelper?.withPermissions {
-                    onPineModeSelected()
+                    onGameMasterModeSelected()
                 }
             }
         }
-        userModeButton = view.findViewById<Button?>(R.id.user_mode).apply {
+        playerModeButton = view.findViewById<Button?>(R.id.player_mode_button).apply {
             setOnClickListener {
                 permissionsHelper?.withPermissions {
-                    onUserModeSelected()
+                    onPlayerModeSelected()
                 }
             }
         }
     }
 
-    private fun onPineModeSelected() {
+    private fun onGameMasterModeSelected() {
         mainScreenView?.apply {
-            pineScreenView = PineScreenView(context)
-            showScreen(pineScreenView!!)
+            gameMasterScreenView = GameMasterScreenView(context)
+            showScreen(gameMasterScreenView!!)
             presenter.onPineModeSelected()
         }
     }
 
-    private fun onUserModeSelected() {
+    private fun onPlayerModeSelected() {
         mainScreenView?.apply {
-            userScreenView = UserScreenView(context).apply {
+            playerScreenView = PlayerScreenView(context).apply {
                 attachController(presenter)
             }
-            showScreen(userScreenView!!)
+            showScreen(playerScreenView!!)
             presenter.onUserModeSelected()
         }
     }
 
     override fun updateSearchState(isRunning: Boolean) {
-        pineScreenView?.apply {
+        gameMasterScreenView?.apply {
             if (isRunning) state = ConnectionStateView.State.SEARCH_PINE_LOVERS
         }
     }
 
     override fun updateConnectionState(isConnected: Boolean) {
-        pineScreenView?.apply {
+        gameMasterScreenView?.apply {
             if (isConnected) state = ConnectionStateView.State.CONNECTED
-        } ?: userScreenView?.updateConnectionState(isConnected)
+        } ?: playerScreenView?.updateConnectionState(isConnected)
     }
 
     override fun updateMessageList(messageList: List<Message>) {
-        userScreenView?.updateMessageList(messageList)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        deviceHelper?.configureDevice(isStartRecording = true)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        deviceHelper?.configureDevice(isStartRecording = false)
+        playerScreenView?.updateMessageList(messageList)
     }
 
     override fun onResume() {
@@ -130,10 +117,10 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
     override fun onDestroyView() {
         super.onDestroyView()
         mainScreenView = null
-        pineModeButton = null
-        userModeButton = null
-        pineScreenView = null
-        userScreenView = null
+        gameMasterModeButton = null
+        playerModeButton = null
+        gameMasterScreenView = null
+        playerScreenView = null
     }
 
     private fun showScreen(view: View) {
@@ -150,11 +137,11 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
                     view.translationX = startPosition * (1f - animatedFraction)
                 }
                 doOnEnd {
-                    removeView(pineModeButton)
-                    removeView(userModeButton)
+                    removeView(gameMasterModeButton)
+                    removeView(playerModeButton)
                     view.translationZ = 0f
-                    pineModeButton = null
-                    userModeButton = null
+                    gameMasterModeButton = null
+                    playerModeButton = null
                 }
                 doOnPreDraw {
                     startPosition = ((mainScreenView?.width ?: 0) * 0.2f).roundToInt()
@@ -177,7 +164,6 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
 }
 
 private val permissions = arrayOf(
-    Manifest.permission.RECORD_AUDIO,
     Manifest.permission.BLUETOOTH,
     Manifest.permission.BLUETOOTH_ADMIN,
     Manifest.permission.ACCESS_FINE_LOCATION,
