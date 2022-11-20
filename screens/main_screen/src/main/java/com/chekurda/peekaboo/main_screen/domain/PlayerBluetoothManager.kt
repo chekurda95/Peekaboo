@@ -4,14 +4,11 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import com.chekurda.common.storeIn
-import com.chekurda.peekaboo.main_screen.data.Message
 import com.chekurda.peekaboo.main_screen.utils.SimpleReceiver
-import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -19,9 +16,7 @@ import io.reactivex.disposables.SerialDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 import kotlin.Exception
 
 internal class PlayerBluetoothManager {
@@ -61,8 +56,6 @@ internal class PlayerBluetoothManager {
         add(connectionDisposable)
     }
 
-    private val messageStoreList: MutableList<Message> = mutableListOf()
-
     @Volatile
     private var isConnected: Boolean = false
     private val isSearching: Boolean
@@ -80,26 +73,19 @@ internal class PlayerBluetoothManager {
         bluetoothAdapter.enable()
     }
 
-    fun startPineLoverSearching() {
+    fun startGameMasterSearching() {
         val context = context ?: return
-        if (bluetoothAdapter.scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            val discoverableIntent: Intent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
-            }
-            context.startActivity(discoverableIntent)
-        }
-        Log.d("PlayerBluetoothManager", "startPineLoverSearching")
-        stopPineLoverSearching()
+        Log.d("PlayerBluetoothManager", "startGameMasterSearching")
+        stopGameMasterSearching()
         subscribeOnDevices()
         searchStartReceiver.register(context)
         searchReceiver.register(context)
         bluetoothAdapter.startDiscovery()
     }
 
-    private fun stopPineLoverSearching() {
+    private fun stopGameMasterSearching() {
         val context = context ?: return
-        Log.d("PlayerBluetoothManager", "stopPineLoverSearching")
+        Log.d("PlayerBluetoothManager", "stopGameMasterSearching")
         deviceListDisposable.set(null)
         bluetoothAdapter.cancelDiscovery()
         searchReceiver.unregister(context)
@@ -107,12 +93,12 @@ internal class PlayerBluetoothManager {
         searchEndReceiver.unregister(context)
     }
 
-    private fun connectToPineLover(pineLover: BluetoothDevice) {
-        Log.d("PlayerBluetoothManager", "connectToPineLover")
-        if (isSearching) stopPineLoverSearching()
+    private fun connectToGameMaster(gameMaster: BluetoothDevice) {
+        Log.d("PlayerBluetoothManager", "connectToGameMaster")
+        if (isSearching) stopGameMasterSearching()
         isConnected = true
         Single.fromCallable {
-            val bluetoothDevice = bluetoothAdapter.getRemoteDevice(pineLover.address)
+            val bluetoothDevice = bluetoothAdapter.getRemoteDevice(gameMaster.address)
             val socket = bluetoothDevice.createRfcommSocketToServiceRecord(secureUUID)
             try {
                 socket.apply { connect() }
@@ -138,25 +124,18 @@ internal class PlayerBluetoothManager {
     private fun addSocketObserver(socket: BluetoothSocket) {
         this.socket = socket
         val thread = object : Thread() {
-
             override fun run() {
                 super.run()
                 kotlin.runCatching {
-                    var allMessagesDelivered = false
                     val inputStream = ObjectInputStream(socket.inputStream)
-                    val outputStream = ObjectOutputStream(socket.outputStream)
                     while (isConnected) {
                         when {
                             socket.inputStream.available() != 0 -> {
                                 val obj = inputStream.readObject()
-                                if (obj is Message) {
+                                /*if (obj is Message) {
                                     messageStoreList.add(obj)
                                     outputStream.writeObject(obj)
-                                }
-                            }
-                            !allMessagesDelivered -> {
-                                outputStream.writeObject(messageStoreList)
-                                allMessagesDelivered = true
+                                }*/
                             }
                             else -> socket.outputStream.write(ByteArray(0))
                         }
@@ -167,7 +146,7 @@ internal class PlayerBluetoothManager {
                     closeSocket()
                     isConnected = false
                     mainHandler?.post {
-                        startPineLoverSearching()
+                        startGameMasterSearching()
                         listener?.onConnectionCanceled(isError = true)
                     }
                 }
@@ -190,8 +169,8 @@ internal class PlayerBluetoothManager {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { bluetoothDevice ->
                 Log.i("PlayerBluetoothManager", "on some device found")
-                if (!isConnected && bluetoothDevice?.name?.contains(PLAYER_DEVICE_NAME) == true) {
-                    connectToPineLover(bluetoothDevice)
+                if (!isConnected && bluetoothDevice?.name?.contains(MATER_DEVICE_NAME) == true) {
+                    connectToGameMaster(bluetoothDevice)
                 }
             }.storeIn(deviceListDisposable)
     }

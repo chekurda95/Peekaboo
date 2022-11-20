@@ -19,10 +19,9 @@ import com.chekurda.common.base_fragment.BasePresenterFragment
 import com.chekurda.design.custom_view_tools.utils.dp
 import com.chekurda.peekaboo.main_screen.R
 import com.chekurda.peekaboo.main_screen.contact.MainScreenFragmentFactory
-import com.chekurda.peekaboo.main_screen.data.Message
 import com.chekurda.peekaboo.main_screen.presentation.views.ConnectionStateView
-import com.chekurda.peekaboo.main_screen.presentation.views.pine.GameMasterScreenView
-import com.chekurda.peekaboo.main_screen.presentation.views.user.PlayerScreenView
+import com.chekurda.peekaboo.main_screen.presentation.views.game_master.GameMasterScreenView
+import com.chekurda.peekaboo.main_screen.presentation.views.player.PlayerScreenView
 import com.chekurda.peekaboo.main_screen.utils.PermissionsHelper
 import kotlin.math.roundToInt
 
@@ -79,34 +78,28 @@ internal class MainScreenFragment : BasePresenterFragment<MainScreenContract.Vie
         mainScreenView?.apply {
             gameMasterScreenView = GameMasterScreenView(context)
             showScreen(gameMasterScreenView!!)
-            presenter.onPineModeSelected()
+            presenter.onMasterModeSelected()
         }
     }
 
     private fun onPlayerModeSelected() {
         mainScreenView?.apply {
-            playerScreenView = PlayerScreenView(context).apply {
-                attachController(presenter)
-            }
+            playerScreenView = PlayerScreenView(context)
             showScreen(playerScreenView!!)
-            presenter.onUserModeSelected()
+            presenter.onPlayerModeSelected()
         }
     }
 
     override fun updateSearchState(isRunning: Boolean) {
         gameMasterScreenView?.apply {
-            if (isRunning) state = ConnectionStateView.State.SEARCH_PINE_LOVERS
+            if (isRunning) state = ConnectionStateView.State.SEARCHING_PLAYERS
         }
     }
 
     override fun updateConnectionState(isConnected: Boolean) {
         gameMasterScreenView?.apply {
-            if (isConnected) state = ConnectionStateView.State.CONNECTED
+            if (isConnected) state = ConnectionStateView.State.READY
         } ?: playerScreenView?.updateConnectionState(isConnected)
-    }
-
-    override fun updateMessageList(messageList: List<Message>) {
-        playerScreenView?.updateMessageList(messageList)
     }
 
     override fun onResume() {

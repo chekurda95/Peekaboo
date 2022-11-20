@@ -1,11 +1,8 @@
 package com.chekurda.peekaboo.main_screen.domain
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothDevice.TRANSPORT_AUTO
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.Context
@@ -13,8 +10,6 @@ import android.content.Intent
 import android.os.Handler
 import android.util.Log
 import com.chekurda.common.storeIn
-import com.chekurda.peekaboo.main_screen.data.Message
-import com.chekurda.peekaboo.main_screen.utils.SimpleReceiver
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -26,7 +21,6 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.lang.Exception
 import java.util.UUID
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
 internal class MasterBluetoothManager {
@@ -46,8 +40,6 @@ internal class MasterBluetoothManager {
     private var isDiscoverable: Boolean = false
 
     private var outputStream: ObjectOutputStream? = null
-    private val messageList: MutableList<Message> = mutableListOf()
-    private var sendMessageQueue = ConcurrentLinkedQueue<Message>()
 
     private var originBluetoothName = ""
 
@@ -55,7 +47,6 @@ internal class MasterBluetoothManager {
     private var mainHandler: Handler? = null
 
     var listener: BluetoothManagerListener? = null
-    var onMessageListChanged: ((List<Message>) -> Unit)? = null
 
     fun init(context: Context, mainHandler: Handler) {
         this.context = context
@@ -63,13 +54,13 @@ internal class MasterBluetoothManager {
         bluetoothAdapter.enable()
     }
 
-    fun startPineDetectService() {
+    fun startPlayerSearchingService() {
         if (isConnected) return
         Log.d("MasterBluetoothManager", "startPineDetectService")
         if (!isDiscoverable) makeDiscoverable()
         bluetoothAdapter.startDiscovery()
         prepareDeviceName()
-        openPineSearchingService()
+        openPlayersSearchingService()
     }
 
     private fun makeDiscoverable() {
@@ -93,9 +84,9 @@ internal class MasterBluetoothManager {
     @Volatile
     private var serverSocket: BluetoothServerSocket? = null
 
-    private fun openPineSearchingService() {
+    private fun openPlayersSearchingService() {
         if (context == null) return
-        Log.d("MasterBluetoothManager", "startPineSearchingService")
+        Log.d("MasterBluetoothManager", "openPlayersSearchingService")
         serverSocket?.close()
         serverSocket = null
         Single.fromCallable {
@@ -113,11 +104,11 @@ internal class MasterBluetoothManager {
             .subscribe(
                 {
                     Log.d("MasterBluetoothManager", "onSocketConnected")
-                    startPineSocketObserver(it)
+                    startPlayersSocketObserver(it)
                     listener?.onConnectionSuccess()
                 },
                 {
-                    Log.e("MasterBluetoothManager", "openPineSearchingService error ${it.message}\n${it.stackTraceToString()}")
+                    Log.e("MasterBluetoothManager", "openPlayersSearchingService error ${it.message}\n${it.stackTraceToString()}")
                     isConnected = false
                     closeServerSocket()
                     listener?.onConnectionCanceled(isError = true)
@@ -128,7 +119,7 @@ internal class MasterBluetoothManager {
 
     var gatt: BluetoothGatt? = null
 
-    private fun startPineSocketObserver(pineSocket: BluetoothSocket) {
+    private fun startPlayersSocketObserver(pineSocket: BluetoothSocket) {
         val cb = object : BluetoothGattCallback() {
             override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
                 super.onReadRemoteRssi(gatt, rssi, status)
@@ -155,29 +146,9 @@ internal class MasterBluetoothManager {
                     isConnected = true
                     val connectionCheckArray = ByteArray(0)
                     while (isConnected) {
+                        sleep(500)
                         gatt?.readRemoteRssi()
-                        if (pineSocket.inputStream.available() != 0) {
-                            when (val obj = inputStream.readObject()) {
-                                is List<*> -> (obj as? List<Message>)?.also { inputMessageList ->
-                                    mainHandler?.post {
-                                        messageList.clear()
-                                        val mappedList = inputMessageList.apply { map { it.isOutcome = it.senderName == originBluetoothName }}
-                                        messageList.addAll(mappedList)
-                                        onMessageListChanged?.invoke(messageList)
-                                    }
-                                }
-                                is Message -> {
-                                    mainHandler?.post {
-                                        messageList.add(obj.apply { isOutcome = senderName == originBluetoothName })
-                                        onMessageListChanged?.invoke(messageList)
-                                    }
-                                }
-                                else -> Unit
-                            }
-                            Log.i("MasterBluetoothManager", "success write")
-                        } else {
-                            pineSocket.outputStream.write(connectionCheckArray)
-                        }
+                        pineSocket.outputStream.write(connectionCheckArray)
                     }
                 }.apply {
                     Log.d("MasterBluetoothManager", "onSocketDisconnected")
@@ -220,33 +191,22 @@ internal class MasterBluetoothManager {
         disposer.dispose()
     }
 
-    fun sendMessage(text: String) {
-        addInMessageQueue(text)
+    fun onGameStarted() {
         val outputStream = outputStream ?: return
         Completable.fromCallable {
-            val message = sendMessageQueue.poll()
-            outputStream.writeObject(message)
+            //outputStream.writeObject(message)
         }.subscribeOn(Schedulers.io())
             .subscribe(
-                { Log.d("MasterBluetoothManager", "onMessage sent") },
-                { Log.d("MasterBluetoothManager", "onMessage send error $it") }
+                { Log.d("MasterBluetoothManager", "onGameStarted sent") },
+                { Log.d("MasterBluetoothManager", "onGameStarted send error $it") }
             )
             .storeIn(disposer)
     }
 
-    private fun addInMessageQueue(text: String) {
-        val message = Message(
-            uuid = UUID.randomUUID(),
-            senderName = originBluetoothName,
-            text = text
-        )
-        sendMessageQueue.add(message)
-    }
-
     private fun prepareDeviceName() {
         originBluetoothName = bluetoothAdapter.name
-        if (!originBluetoothName.contains(PLAYER_DEVICE_NAME)) {
-            bluetoothAdapter.name = "%s %s".format(PLAYER_DEVICE_NAME, bluetoothAdapter.name)
+        if (!originBluetoothName.contains(MATER_DEVICE_NAME)) {
+            bluetoothAdapter.name = "%s %s".format(MATER_DEVICE_NAME, bluetoothAdapter.name)
         }
     }
 
@@ -259,6 +219,6 @@ internal class MasterBluetoothManager {
 }
 
 internal const val MASTER_SECURE_UUID = "fa87c0d0-afac-11de-8a39-0800200c9a67"
-internal const val PLAYER_DEVICE_NAME = "Peekaboo player"
+internal const val MATER_DEVICE_NAME = "Peekaboo game master"
 internal const val MASTER_SERVICE_NAME = "Secret_pine_service"
 private const val DISCOVERABLE_SECONDS = 300L

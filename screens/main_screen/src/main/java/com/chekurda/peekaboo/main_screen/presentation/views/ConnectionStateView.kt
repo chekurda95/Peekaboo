@@ -24,10 +24,10 @@ internal class ConnectionStateView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     enum class State(val text: String, @DrawableRes val backgroundRes: Int) {
-        PREPARING("Pine preparing".uppercase(), R.drawable.search_state_background),
-        SEARCH_PINE_LOVERS("Pine lovers searching".uppercase(), R.drawable.search_state_background),
-        SEARCH_PINE("Pine searching".uppercase(), R.drawable.search_state_background),
-        CONNECTED("Connected".uppercase(), R.drawable.connected_state_background)
+        GAME_STARTED("Game is started!".uppercase(), R.drawable.connected_state_background),
+        READY("READY".uppercase(), R.drawable.connected_state_background),
+        SEARCHING_GAME_MASTER("Searching game master".uppercase(), R.drawable.search_state_background),
+        SEARCHING_PLAYERS("Searching players".uppercase(), R.drawable.search_state_background)
     }
 
     private val textLayout = TextLayout {
@@ -45,7 +45,7 @@ internal class ConnectionStateView @JvmOverloads constructor(
     }
     private val dotsSpacing = dp(2)
 
-    var state: State = State.PREPARING
+    var state: State = State.GAME_STARTED
         set(value) {
             field = value
             val isChanged = textLayout.configure { text = value.text }
@@ -61,7 +61,7 @@ internal class ConnectionStateView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        dotsDrawable.setVisible(state != State.CONNECTED, false)
+        dotsDrawable.setVisible(state == State.SEARCHING_GAME_MASTER, false)
         setMeasuredDimension(
             measureDirection(widthMeasureSpec) { suggestedMinimumWidth },
             measureDirection(heightMeasureSpec) { suggestedMinimumHeight },

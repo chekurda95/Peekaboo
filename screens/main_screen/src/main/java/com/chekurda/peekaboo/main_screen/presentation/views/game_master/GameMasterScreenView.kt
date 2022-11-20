@@ -1,4 +1,4 @@
-package com.chekurda.peekaboo.main_screen.presentation.views.pine
+package com.chekurda.peekaboo.main_screen.presentation.views.game_master
 
 import android.content.Context
 import android.util.AttributeSet
@@ -17,7 +17,7 @@ internal class GameMasterScreenView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
 
     private val stateView = ConnectionStateView(context).apply {
-        state = ConnectionStateView.State.PREPARING
+        state = ConnectionStateView.State.SEARCHING_PLAYERS
         updatePadding(top = dp(40), bottom = dp(40))
     }
 
